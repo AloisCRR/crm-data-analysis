@@ -20,6 +20,17 @@ def _():
 
 @app.cell
 def _(mo):
+    _df = mo.sql(
+        f"""
+        SET autoinstall_known_extensions=true;
+        SET autoload_known_extensions=true;
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
     mo.md(r"""# Dataset""")
     return
 
