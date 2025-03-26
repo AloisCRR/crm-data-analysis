@@ -14,8 +14,8 @@ def _():
 def _():
     import altair as alt
     import duckdb
-    import polars as pl
-    return alt, duckdb, pl
+    import pandas as pd
+    return alt, duckdb, pd
 
 
 @app.cell
@@ -77,8 +77,8 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pl):
-    accounts_df = pl.read_csv(f"{mo.notebook_location()}/public/accounts.csv")
+def _(mo, pd):
+    accounts_df = pd.read_csv(f"{mo.notebook_location()}/public/accounts.csv")
     return (accounts_df,)
 
 
@@ -109,8 +109,8 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pl):
-    products_df = pl.read_csv(f"{mo.notebook_location()}/public/products.csv")
+def _(mo, pd):
+    products_df = pd.read_csv(f"{mo.notebook_location()}/public/products.csv")
     return (products_df,)
 
 
@@ -141,9 +141,9 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pl):
-    sales_pipeline_df = pl.read_csv(
-        f"{mo.notebook_location()}/public/sales_pipeline.csv", try_parse_dates=True
+def _(mo, pd):
+    sales_pipeline_df = pd.read_csv(
+        f"{mo.notebook_location()}/public/sales_pipeline.csv", parse_dates=['engage_date', 'close_date']
     )
     return (sales_pipeline_df,)
 
@@ -175,8 +175,8 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pl):
-    sales_teams_df = pl.read_csv(f"{mo.notebook_location()}/public/sales_teams.csv")
+def _(mo, pd):
+    sales_teams_df = pd.read_csv(f"{mo.notebook_location()}/public/sales_teams.csv")
     return (sales_teams_df,)
 
 
@@ -540,50 +540,29 @@ def _(crm_data, mo):
 
 
 @app.cell
-def _(alt, cohort_data, pl):
-    # Step 1: Convert the wide format to long format using unpivot
-    _df_melted = cohort_data.unpivot(
-        # Columns to unpivot (the month columns)
-        on=["month_0", "month_1", "month_2", "month_3", "month_6", "month_12"],
+def _(alt, cohort_data):
+    # Step 1: Convert the wide format to long format using pandas melt
+    df_melted = cohort_data.to_pandas().melt(
         # Columns to keep as index
-        index=["acquisition_year", "acquisition_month", "cohort_size"],
+        id_vars=["acquisition_year", "acquisition_month", "cohort_size"],
+        # Columns to unpivot (the month columns)
+        value_vars=["month_0", "month_1", "month_2", "month_3", "month_6", "month_12"],
         # Name for the new columns
-        variable_name="month",
+        var_name="month",
         value_name="active_customers",
     )
 
     # Step 2: Clean up the month column and create cohort labels
-    _df_melted = _df_melted.with_columns(
-        [
-            # Remove 'month_' prefix from the month column
-            pl.col("month")
-            .str.replace("month_", "")
-            .cast(pl.Int64)
-            .alias("month"),
-            # Create cohort label combining year and month
-            (
-                pl.col("acquisition_year").cast(str)
-                + "-"
-                + pl.col("acquisition_month").cast(str).str.zfill(2)
-            ).alias("cohort"),
-        ]
-    )
+    df_melted["month"] = df_melted["month"].str.replace("month_", "").astype(int)
+    df_melted["cohort"] = df_melted["acquisition_year"].astype(str) + "-" + df_melted["acquisition_month"].astype(str).str.zfill(2)
 
     # Step 3: Calculate retention rate
-    _df_melted = _df_melted.with_columns(
-        [
-            (pl.col("active_customers") / pl.col("cohort_size") * 100).alias(
-                "retention_rate"
-            )
-        ]
-    )
+    df_melted["retention_rate"] = (df_melted["active_customers"] / df_melted["cohort_size"]) * 100
 
     # Step 4: Select and order final columns
-    _df_final = _df_melted.select(
-        ["cohort", "month", "retention_rate", "active_customers", "cohort_size"]
-    ).sort(["cohort", "month"])
+    df_final = df_melted[["cohort", "month", "retention_rate", "active_customers", "cohort_size"]].sort_values(["cohort", "month"])
 
-    alt.Chart(_df_final).mark_rect().encode(
+    alt.Chart(df_final).mark_rect().encode(
         x=alt.X("month:O", title="Month Since Acquisition"),
         y=alt.Y("cohort:O", title="Cohort (Acquisition Month)", sort="descending"),
         color=alt.Color(
@@ -599,7 +578,7 @@ def _(alt, cohort_data, pl):
             "cohort_size",
         ],
     ).properties(width=600, height=400, title="Customer Retention by Cohort")
-    return
+    return df_final, df_melted
 
 
 @app.cell
