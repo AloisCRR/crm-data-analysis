@@ -14,13 +14,14 @@ def _():
 @app.cell
 def _():
     import io
+    from urllib.parse import urlparse
 
     import altair as alt
     import duckdb
     import pandas as pd
     import requests
 
-    return alt, duckdb, pd, requests, io
+    return alt, duckdb, pd, requests, io, urlparse
 
 
 @app.cell
@@ -82,8 +83,14 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pd, requests, io):
+def _(mo, pd, requests, io, urlparse):
     def read_csv_from_url(url):
+        # Check if URL is valid
+        parsed = urlparse(url)
+        if not parsed.scheme or not parsed.netloc:
+            # If not a valid URL, return the value directly
+            return pd.read_csv(url)
+        # If valid URL, proceed with download
         response = requests.get(url)
         response.raise_for_status()
         return pd.read_csv(io.StringIO(response.text))
