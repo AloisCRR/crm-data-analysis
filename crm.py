@@ -78,7 +78,9 @@ def _(mo):
 
 @app.cell
 def _(mo, pd):
-    accounts_df = pd.read_csv(f"{mo.notebook_location()}/public/accounts.csv")
+    accounts_df = pd.read_csv(
+        f"{mo.notebook_location()}/public/accounts.csv", compression=None
+    )
     return (accounts_df,)
 
 
@@ -110,7 +112,9 @@ def _(mo):
 
 @app.cell
 def _(mo, pd):
-    products_df = pd.read_csv(f"{mo.notebook_location()}/public/products.csv")
+    products_df = pd.read_csv(
+        f"{mo.notebook_location()}/public/products.csv", compression=None
+    )
     return (products_df,)
 
 
@@ -143,7 +147,9 @@ def _(mo):
 @app.cell
 def _(mo, pd):
     sales_pipeline_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/sales_pipeline.csv", parse_dates=['engage_date', 'close_date']
+        f"{mo.notebook_location()}/public/sales_pipeline.csv",
+        parse_dates=["engage_date", "close_date"],
+        compression=None,
     )
     return (sales_pipeline_df,)
 
@@ -176,7 +182,9 @@ def _(mo):
 
 @app.cell
 def _(mo, pd):
-    sales_teams_df = pd.read_csv(f"{mo.notebook_location()}/public/sales_teams.csv")
+    sales_teams_df = pd.read_csv(
+        f"{mo.notebook_location()}/public/sales_teams.csv", compression=None
+    )
     return (sales_teams_df,)
 
 
