@@ -22,8 +22,8 @@ def _():
 def _(mo):
     _df = mo.sql(
         f"""
-        SET autoinstall_known_extensions=true;
-        SET autoload_known_extensions=true;
+        INSTALL httpfs;
+        LOAD httpfs;
         """
     )
     return
