@@ -7,6 +7,7 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -15,6 +16,7 @@ def _():
     import altair as alt
     import duckdb
     import pandas as pd
+
     return alt, duckdb, pd
 
 
@@ -79,7 +81,9 @@ def _(mo):
 @app.cell
 def _(mo, pd):
     accounts_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/accounts.csv", compression=None
+        f"{mo.notebook_location()}/public/accounts.csv",
+        compression=None,
+        engine="python",
     )
     return (accounts_df,)
 
@@ -113,7 +117,9 @@ def _(mo):
 @app.cell
 def _(mo, pd):
     products_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/products.csv", compression=None
+        f"{mo.notebook_location()}/public/products.csv",
+        compression=None,
+        engine="python",
     )
     return (products_df,)
 
@@ -150,6 +156,7 @@ def _(mo, pd):
         f"{mo.notebook_location()}/public/sales_pipeline.csv",
         parse_dates=["engage_date", "close_date"],
         compression=None,
+        engine="python",
     )
     return (sales_pipeline_df,)
 
@@ -183,7 +190,9 @@ def _(mo):
 @app.cell
 def _(mo, pd):
     sales_teams_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/sales_teams.csv", compression=None
+        f"{mo.notebook_location()}/public/sales_teams.csv",
+        compression=None,
+        engine="python",
     )
     return (sales_teams_df,)
 
@@ -562,13 +571,21 @@ def _(alt, cohort_data):
 
     # Step 2: Clean up the month column and create cohort labels
     df_melted["month"] = df_melted["month"].str.replace("month_", "").astype(int)
-    df_melted["cohort"] = df_melted["acquisition_year"].astype(str) + "-" + df_melted["acquisition_month"].astype(str).str.zfill(2)
+    df_melted["cohort"] = (
+        df_melted["acquisition_year"].astype(str)
+        + "-"
+        + df_melted["acquisition_month"].astype(str).str.zfill(2)
+    )
 
     # Step 3: Calculate retention rate
-    df_melted["retention_rate"] = (df_melted["active_customers"] / df_melted["cohort_size"]) * 100
+    df_melted["retention_rate"] = (
+        df_melted["active_customers"] / df_melted["cohort_size"]
+    ) * 100
 
     # Step 4: Select and order final columns
-    df_final = df_melted[["cohort", "month", "retention_rate", "active_customers", "cohort_size"]].sort_values(["cohort", "month"])
+    df_final = df_melted[
+        ["cohort", "month", "retention_rate", "active_customers", "cohort_size"]
+    ].sort_values(["cohort", "month"])
 
     alt.Chart(df_final).mark_rect().encode(
         x=alt.X("month:O", title="Month Since Acquisition"),
@@ -675,16 +692,20 @@ def _(mo):
 @app.cell
 def _(alt, rfm):
     alt.Chart(rfm).mark_circle().encode(
-        x=alt.X('recency_days:Q', title='Days Since Last Purchase'),
-        y=alt.Y('frequency:Q', title='Number of Purchases'),
-        size=alt.Size('monetary:Q', title='Total Spend', scale=alt.Scale(range=[50, 500])),
-        color=alt.Color('customer_segment:N', title='Customer Segment'),
-        tooltip=['account', 'recency_days', 'frequency', 'monetary', 'customer_segment']
-    ).properties(
-        width=600,
-        height=400,
-        title='Customer RFM Analysis'
-    )
+        x=alt.X("recency_days:Q", title="Days Since Last Purchase"),
+        y=alt.Y("frequency:Q", title="Number of Purchases"),
+        size=alt.Size(
+            "monetary:Q", title="Total Spend", scale=alt.Scale(range=[50, 500])
+        ),
+        color=alt.Color("customer_segment:N", title="Customer Segment"),
+        tooltip=[
+            "account",
+            "recency_days",
+            "frequency",
+            "monetary",
+            "customer_segment",
+        ],
+    ).properties(width=600, height=400, title="Customer RFM Analysis")
     return
 
 
@@ -805,40 +826,33 @@ def _(crm_data, mo):
 def _(alt, conversion):
     # Make sure deal_stage is treated as a categorical variable
     alt.Chart(conversion).mark_bar().encode(
-        x=alt.X('count:Q', title='Number of Opportunities'),
-        y=alt.Y('deal_stage:N', 
-                sort='-x',  # Sort by count descending
-                title='Pipeline Stage'),
-        color=alt.Color('deal_stage:N', 
-                       scale=alt.Scale(scheme='blues'),
-                       legend=None),
-        tooltip=['deal_stage:N', 'count:Q', 'total_value:Q']
-    ).properties(
-        width=500,
-        height=300,
-        title='Sales Pipeline Conversion'
-    )
+        x=alt.X("count:Q", title="Number of Opportunities"),
+        y=alt.Y(
+            "deal_stage:N",
+            sort="-x",  # Sort by count descending
+            title="Pipeline Stage",
+        ),
+        color=alt.Color("deal_stage:N", scale=alt.Scale(scheme="blues"), legend=None),
+        tooltip=["deal_stage:N", "count:Q", "total_value:Q"],
+    ).properties(width=500, height=300, title="Sales Pipeline Conversion")
     return
 
 
 @app.cell
 def _(alt, deal_conversion):
     alt.Chart(deal_conversion).mark_bar().encode(
-        x=alt.X('count:Q', title='Number of Opportunities'),
-        y=alt.Y('deal_stage:N', 
-                sort='-x',  # Sort by count descending
-                title='Pipeline Stage'),
-        color=alt.Color('deal_stage:N', 
-                       scale=alt.Scale(scheme='blues'),
-                       legend=None),
-        tooltip=['deal_stage', 'count', 'total_value:Q']
+        x=alt.X("count:Q", title="Number of Opportunities"),
+        y=alt.Y(
+            "deal_stage:N",
+            sort="-x",  # Sort by count descending
+            title="Pipeline Stage",
+        ),
+        color=alt.Color("deal_stage:N", scale=alt.Scale(scheme="blues"), legend=None),
+        tooltip=["deal_stage", "count", "total_value:Q"],
     ).properties(
-        width=500,
-        height=300,
-        title='Sales Pipeline Conversion'
+        width=500, height=300, title="Sales Pipeline Conversion"
     ).transform_window(
-        rank='rank(count)',
-        sort=[alt.SortField('count', order='descending')]
+        rank="rank(count)", sort=[alt.SortField("count", order="descending")]
     )
     return
 
@@ -963,9 +977,7 @@ def _(alt, product_perf):
 
     # Win rate line
     line = base.mark_line(color="red", point=True).encode(
-        y=alt.Y(
-            "win_rate:Q", title="Win Rate (%)", axis=alt.Axis(titleColor="red")
-        )
+        y=alt.Y("win_rate:Q", title="Win Rate (%)", axis=alt.Axis(titleColor="red"))
     )
 
     # Combine charts
@@ -1124,19 +1136,25 @@ def _(crm_data, mo):
 @app.cell
 def _(alt, geo_perf):
     alt.Chart(geo_perf).mark_bar().encode(
-        y=alt.Y('office_location:N', 
-                sort='-x',  # Sort by revenue descending
-                title='Location'),
-        x=alt.X('total_revenue:Q', title='Total Revenue'),
-        color=alt.Color('win_rate:Q', 
-                       scale=alt.Scale(scheme='viridis'),
-                       title='Win Rate (%)'),
-        tooltip=['office_location', 'total_revenue', 'win_rate', 
-                 'customer_count', 'won_deals', 'lost_deals']
+        y=alt.Y(
+            "office_location:N",
+            sort="-x",  # Sort by revenue descending
+            title="Location",
+        ),
+        x=alt.X("total_revenue:Q", title="Total Revenue"),
+        color=alt.Color(
+            "win_rate:Q", scale=alt.Scale(scheme="viridis"), title="Win Rate (%)"
+        ),
+        tooltip=[
+            "office_location",
+            "total_revenue",
+            "win_rate",
+            "customer_count",
+            "won_deals",
+            "lost_deals",
+        ],
     ).properties(
-        width=600,
-        height=400,
-        title='Revenue by Geographic Location'
+        width=600, height=400, title="Revenue by Geographic Location"
     ).interactive()
     return
 
