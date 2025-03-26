@@ -80,7 +80,7 @@ def _(mo):
 def _(mo):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE accounts AS SELECT * from 'dataset/accounts.csv'
+        CREATE OR REPLACE TABLE accounts AS SELECT * from '{mo.notebook_location()}/public/accounts.csv'
         """
     )
     return (accounts,)
@@ -106,7 +106,7 @@ def _(mo):
 def _(mo):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE products AS SELECT * from 'dataset/products.csv'
+        CREATE OR REPLACE TABLE products AS SELECT * from '{mo.notebook_location()}/public/products.csv'
         """
     )
     return (products,)
@@ -132,7 +132,7 @@ def _(mo):
 def _(mo):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE sales_pipeline AS SELECT * from 'dataset/sales_pipeline.csv'
+        CREATE OR REPLACE TABLE sales_pipeline AS SELECT * from '{mo.notebook_location()}/public/sales_pipeline.csv'
         """
     )
     return (sales_pipeline,)
@@ -158,7 +158,7 @@ def _(mo):
 def _(mo):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE sales_teams AS SELECT * from 'dataset/sales_teams.csv'
+        CREATE OR REPLACE TABLE sales_teams AS SELECT * from '{mo.notebook_location()}/public/sales_teams.csv'
         """
     )
     return (sales_teams,)
