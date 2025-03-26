@@ -20,17 +20,6 @@ def _():
 
 @app.cell
 def _(mo):
-    _df = mo.sql(
-        f"""
-        INSTALL httpfs;
-        LOAD httpfs;
-        """
-    )
-    return
-
-
-@app.cell
-def _(mo):
     mo.md(r"""# Dataset""")
     return
 
@@ -88,10 +77,16 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
+def _(mo, pl):
+    accounts_df = pl.read_csv(f"{mo.notebook_location()}/public/accounts.csv")
+    return (accounts_df,)
+
+
+@app.cell
+def _(accounts_df, mo):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE accounts AS SELECT * from '{mo.notebook_location()}/public/accounts.csv'
+        CREATE OR REPLACE TABLE accounts AS SELECT * FROM accounts_df
         """
     )
     return (accounts,)
@@ -114,10 +109,16 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
+def _(mo, pl):
+    products_df = pl.read_csv(f"{mo.notebook_location()}/public/products.csv")
+    return (products_df,)
+
+
+@app.cell
+def _(mo, products_df):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE products AS SELECT * from '{mo.notebook_location()}/public/products.csv'
+        CREATE OR REPLACE TABLE products AS SELECT * FROM products_df
         """
     )
     return (products,)
@@ -140,10 +141,18 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
+def _(mo, pl):
+    sales_pipeline_df = pl.read_csv(
+        f"{mo.notebook_location()}/public/sales_pipeline.csv", try_parse_dates=True
+    )
+    return (sales_pipeline_df,)
+
+
+@app.cell
+def _(mo, sales_pipeline_df):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE sales_pipeline AS SELECT * from '{mo.notebook_location()}/public/sales_pipeline.csv'
+        CREATE OR REPLACE TABLE sales_pipeline AS SELECT * FROM sales_pipeline_df
         """
     )
     return (sales_pipeline,)
@@ -166,10 +175,16 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
+def _(mo, pl):
+    sales_teams_df = pl.read_csv(f"{mo.notebook_location()}/public/sales_teams.csv")
+    return (sales_teams_df,)
+
+
+@app.cell
+def _(mo, sales_teams_df):
     _df = mo.sql(
         f"""
-        CREATE OR REPLACE TABLE sales_teams AS SELECT * from '{mo.notebook_location()}/public/sales_teams.csv'
+        CREATE OR REPLACE TABLE sales_teams AS SELECT * FROM sales_teams_df
         """
     )
     return (sales_teams,)
