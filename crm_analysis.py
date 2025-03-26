@@ -1,5 +1,4 @@
 import marimo
-import pandas as pd
 
 __generated_with = "0.11.25"
 app = marimo.App(width="medium")
@@ -159,9 +158,15 @@ def _(mo, pd):
         compression=None,
         engine="python",
     )
-    # Convert timestamps to datetime64[ns] format
-    sales_pipeline_df["engage_date"] = pd.to_datetime(sales_pipeline_df["engage_date"])
-    sales_pipeline_df["close_date"] = pd.to_datetime(sales_pipeline_df["close_date"])
+
+    # Convert timestamps to datetime64[us] which DuckDB can handle
+    sales_pipeline_df["engage_date"] = pd.to_datetime(
+        sales_pipeline_df["engage_date"]
+    ).astype("datetime64[us]")
+    sales_pipeline_df["close_date"] = pd.to_datetime(
+        sales_pipeline_df["close_date"]
+    ).astype("datetime64[us]")
+
     return (sales_pipeline_df,)
 
 
