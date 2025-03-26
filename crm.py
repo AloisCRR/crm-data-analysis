@@ -1,5 +1,4 @@
 import marimo
-import pandas as pd
 
 __generated_with = "0.11.25"
 app = marimo.App(width="medium")
@@ -14,11 +13,14 @@ def _():
 
 @app.cell
 def _():
+    import io
+
     import altair as alt
     import duckdb
     import pandas as pd
+    import requests
 
-    return alt, duckdb, pd
+    return alt, duckdb, pd, requests, io
 
 
 @app.cell
@@ -80,12 +82,18 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pd):
-    accounts_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/accounts.csv",
-        compression=None,
-        engine="python",
-    )
+def _(mo, pd, requests, io):
+    def read_csv_from_url(url):
+        response = requests.get(url)
+        response.raise_for_status()
+        return pd.read_csv(io.StringIO(response.text))
+
+    return (read_csv_from_url,)
+
+
+@app.cell
+def _(mo, pd, read_csv_from_url):
+    accounts_df = read_csv_from_url(f"{mo.notebook_location()}/public/accounts.csv")
     return (accounts_df,)
 
 
@@ -116,12 +124,8 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pd):
-    products_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/products.csv",
-        compression=None,
-        engine="python",
-    )
+def _(mo, pd, read_csv_from_url):
+    products_df = read_csv_from_url(f"{mo.notebook_location()}/public/products.csv")
     return (products_df,)
 
 
@@ -152,16 +156,18 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pd):
-    sales_pipeline_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/sales_pipeline.csv",
-        parse_dates=["engage_date", "close_date"],
-        compression=None,
-        engine="python",
+def _(mo, pd, read_csv_from_url):
+    sales_pipeline_df = read_csv_from_url(
+        f"{mo.notebook_location()}/public/sales_pipeline.csv"
     )
-    # Convert timestamps to datetime64[ns] format
-    sales_pipeline_df["engage_date"] = pd.to_datetime(sales_pipeline_df["engage_date"])
-    sales_pipeline_df["close_date"] = pd.to_datetime(sales_pipeline_df["close_date"])
+    # Convert timestamps to datetime64[s] format for DuckDB compatibility
+    sales_pipeline_df["engage_date"] = pd.to_datetime(
+        sales_pipeline_df["engage_date"]
+    ).astype("datetime64[s]")
+    sales_pipeline_df["close_date"] = pd.to_datetime(
+        sales_pipeline_df["close_date"]
+    ).astype("datetime64[s]")
+
     return (sales_pipeline_df,)
 
 
@@ -192,11 +198,9 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pd):
-    sales_teams_df = pd.read_csv(
-        f"{mo.notebook_location()}/public/sales_teams.csv",
-        compression=None,
-        engine="python",
+def _(mo, pd, read_csv_from_url):
+    sales_teams_df = read_csv_from_url(
+        f"{mo.notebook_location()}/public/sales_teams.csv"
     )
     return (sales_teams_df,)
 
