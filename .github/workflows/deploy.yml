@@ -32,7 +32,7 @@ jobs:
 
       - name: 📄 Export notebook
         run: |
-          marimo export html-wasm crm_analysis.py -o _site --mode run
+          marimo export html-wasm crm.py -o _site --mode run
 
       - name: 📤 Upload artifact
         uses: actions/upload-pages-artifact@v3
