@@ -43,6 +43,19 @@ The primary analysis is performed within the Marimo notebook.
 The project also includes a script for machine learning:
 - `crm_clustering.py`: Performs K-means clustering analysis using Scikit-learn.
 
+## Screenshots
+
+Here are some glimpses of the Marimo notebook interface and visualizations:
+
+![Screenshot 1](screenshots/image.png)
+*Dataset Preview*
+
+![Screenshot 2](screenshots/image2.png)
+*Markdown formulas*
+
+![Screenshot 3](screenshots/image3.png)
+*Interactive graphs*
+
 ## Technologies Used
 
 - [Marimo](https://marimo.io/) for the interactive notebook interface.
